@@ -1,4 +1,6 @@
-import { ChangeEvent, useState } from "react";
+import axios from "axios";
+import { log } from "console";
+import { useEffect, useState } from "react";
 
 interface ChatLog {
   type: string;
@@ -18,16 +20,48 @@ export default function Home() {
       { type: "user", message: inputValue },
     ]);
 
+    //call api
+    sendMessage(inputValue);
+
     //clear
     setInputValue("");
   };
 
+  const sendMessage = (message: string) => {
+    const url = "https://api.openai.com/v1/chat/completions";
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPEN_API_KEY}`,
+    };
+
+    const data = {
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: message }],
+    };
+
+    setIsloading(true);
+    axios
+      .post(url, data, { headers })
+      .then((response) => {
+        setChatLogs((prevChatLog) => [
+          ...prevChatLog,
+          { type: "bot", message: response.data.choices[0].message.content },
+        ]);
+        setIsloading(false);
+      })
+      .catch((error) => {
+        setIsloading(false);
+        console.error(error);
+      });
+  };
+
   return (
     <>
-      <h1>Hi GPT</h1>
-      {chatLogs.map((message, idx: number) => {
-        <div key={idx}>{message.message}</div>;
-      })}
+      <p>Hi GPT</p>
+      {chatLogs.map((message, idx) => (
+        <div key={idx}>{message.message}</div>
+      ))}
+
       <form onSubmit={handleSubmit}>
         <input
           type="text"
