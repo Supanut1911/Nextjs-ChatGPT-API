@@ -1,7 +1,7 @@
 import LoadingTyping from "@/components/LoadingTyping";
 import axios from "axios";
-import { log } from "console";
 import { useEffect, useState } from "react";
+import { Configuration } from "openai";
 
 interface ChatLog {
   type: string;
